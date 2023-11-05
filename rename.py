@@ -4,6 +4,7 @@ from pprint import pprint
 import shutil
 import os
 import glob
+import argparse
 
 def get_exif(filename):
     """
@@ -21,37 +22,40 @@ def get_exif(filename):
             return None
 
 
+def main(targetDir):
 
-targetDir = '12931027'
-outputDir = 'rename'
-if not os.path.isdir(os.path.join(targetDir,outputDir)):
-    os.mkdir(os.path.join(targetDir,outputDir))
+    outputDir = 'rename'
+    if not os.path.isdir(os.path.join(targetDir,outputDir)):
+        os.mkdir(os.path.join(targetDir,outputDir))
 
-file_list = os.listdir(targetDir)
-file_list_jpg = [file for file in file_list if file.endswith(".JPG")]
+    extensions = [".jpg", ".JPG"]
+    
+    for extension in extensions:
+        file_list = os.listdir(targetDir)
+        file_list_jpg = [file for file in file_list if file.endswith(extension)]
 
-for file in file_list_jpg:
-    src = os.path.join(targetDir,file)
-    exif_data = get_exif(src)
-    infoDate = exif_data['DateTime']
-    outputFileName = infoDate.replace(':','').replace(' ','_')
+        for file in file_list_jpg:
+            src = os.path.join(targetDir,file)
+            exif_data = get_exif(src)
+            infoDate = exif_data['DateTime']
+            outputFileName = infoDate.replace(':','').replace(' ','_')
 
-    src = os.path.join(targetDir,file)
-    dst = os.path.join(targetDir,outputDir,outputFileName+'.JPG')
-    print('copying:', src, '>', dst)
-    shutil.copy2(src,dst)
+            src = os.path.join(targetDir,file)
+            dst = os.path.join(targetDir,outputDir,outputFileName+extension)
+            if os.path.exists(dst):
+                dst = dst.replace(extension,'(re)'+extension)
+                print('(file exists) copying:', src, '>', dst)
+            else:
+                print('copying:', src, '>', dst)
+            
+            shutil.copy2(src,dst)
 
-file_list = os.listdir(targetDir)
-file_list_jpg = [file for file in file_list if file.endswith(".jpg")]
+if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--folderName")
+    args = parser.parse_args()
 
-for file in file_list_jpg:
-    src = os.path.join(targetDir,file)
-    exif_data = get_exif(src)
-    infoDate = exif_data['DateTime']
-    outputFileName = infoDate.replace(':','').replace(' ','_')
+    foloderName = args.folderName
+    print('rename strat:', foloderName)
+    main(foloderName)
 
-    src = os.path.join(targetDir,file)
-    dst = os.path.join(targetDir,outputDir,outputFileName+'.jpg')
-    print('copying:', src, '>', dst)
-    shutil.copy2(src,dst)
-# shutil.copy2()
